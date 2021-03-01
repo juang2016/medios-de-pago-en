@@ -59,7 +59,7 @@
         "operationId": "post-PSEGetTransaccionInformation",
         "responses": {
           "200": {
-            "description": "**TransactionInformation**. Información del estado de la transacción."
+            "description": "**TransactionInformation**. Transaction status information."
           }
         },
         "requestBody": {
@@ -70,13 +70,13 @@
                 "properties": {}
               },
               "examples": {
-                "Ejemplo": {
+                "Example": {
                   "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <getTransactionInformation xmlns=\"https://placetopay.com/soap/pse\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n            <transactionID xmlns=\"\">1503290218</transactionID>\n        </getTransactionInformation>\n    </Body>\n</Envelope>"
                 }
               }
             }
           },
-          "description": "Obtiene la información de una transacción, debe ser consultado para cualquier operación previamente creada con el método createTransaction o `createTransactionMultiCredit` ya sea cuando regresa del banco o cuando al menos han transcurrido 7 minutos desde que el cliente fue redirigido a la interfaz del banco. Deberá consumirse en intervalos de al menos cada 12 minutos hasta que tenga un estado de transacción diferente a `PENDING`.\n\n**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación |\n| transactionID | int | Identificador único de la transacción en Placetopay, equivale al retornado en la creación de la transacción. |"
+          "description": "Once client has completed transaction on bank interface, bank redirects client to URL specified when creating transaction, at this entry point to its application, you must consume `getTransactionInformation` service that allows you to determine status of transaction. Only if transaction has an OK status is because transaction was authorized, if on contrary it gets a `PENDING` status is because it does not yet have a final response from bank about transaction.\nWhether client returns to re-entry point and transaction is pending, or has abandoned operation and broken normal flow, `getTransactionInformation` service must be consumed for all operations that since `createTransaction` was invoked take more than 7 minutes without a final state of operation\n\n\n**PARAMETERS**\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| auth | Authentication | Authentication data |\n| transactionID | int | Unique transaction identifier in Placetopay, equivalent to return in transaction creation. |"
         },
         "tags": [
           "Servicio PSE"
