@@ -8,11 +8,7 @@
   "servers": [
     {
       "url": "https://test.placetopay.com/soap/",
-      "description": "Modo pruebas"
-    },
-    {
-      "url": " https://test.placetopay.com/",
-      "description": "AIM modo pruebas"
+      "description": "Test Mode "
     }
   ],
   "paths": {
