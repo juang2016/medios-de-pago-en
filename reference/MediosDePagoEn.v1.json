@@ -47,7 +47,7 @@
           "description": "Gets list of banks available for trade establishment in ACH Colombia's PSE system.\n\n**Parameters**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Authentication data (Go to authentication session for more details)|"
         },
         "tags": [
-          "Servicio PSE"
+          "PSE Service"
         ],
         "description": "Once customer has determined that they want to pay by debit to a checking or savings account, they must present to them list of banks that are currently available for transaction. This list of banks is obtained by consuming getBankList method which must be consumed once a day, which requires that a cache mechanism be available to retrieve list of cache if service has already been consumed in day.\n\nAdditionally, when choosing which bank to make transaction with, user must also indicate what type of bank interface they want to deploy, that is, whether people’s or companies' interface.\n\nIf for any reason list of banks could not be obtained, a message \" list of Financial Institutions could not be obtained, please try later\" and again consume bank list service to try to get that list and be able to cache it.\nNote that in Multicredit operations you must use service code for multicredit and that you must always pass all dependent accounts (entity, service) for credits so some of them go with values in zero.  credit list is required to correspond to all dependent subcodes.\n"
       },
