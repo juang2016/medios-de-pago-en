@@ -76,7 +76,7 @@
               }
             }
           },
-          "description": "Gets information of a transaction, it must be queried for any operation previously created with createTransaction or `createTransactionMultiCredit` method either when it returns from bank or when at least 7 minutes have elapsed since client was redirected to bank interface. It should be consumed at intervals of at least every 12 minutes until it has a transaction state other than `PENDING`.\n\n**PARAMETERS**\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| auth | Authentication | Authentication data |\n| transactionID | int | Unique transaction identifier in Placetopay, equivalent to return in transaction creation. |\n\n\n**PARAMETERS**\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| auth | Authentication | Authentication data |\n| transactionID | int | Unique transaction identifier in Placetopay, equivalent to return in transaction creation. |"
+          "description": "Gets information of a transaction, it must be queried for any operation previously created with createTransaction or `createTransactionMultiCredit` method either when it returns from bank or when at least 7 minutes have elapsed since client was redirected to bank interface. It should be consumed at intervals of at least every 12 minutes until it has a transaction state other than `PENDING`.\n\n**PARAMETERS**\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| auth | Authentication | Authentication data |\n| transactionID | int | Unique transaction identifier in Placetopay, equivalent to return in transaction creation. |\n"
         },
         "tags": [
           "PSE Service"
