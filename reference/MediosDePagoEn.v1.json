@@ -1,0 +1,527 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ApiColombia",
+    "version": "1.0",
+    "description": "Este Webservice y su arquitectura permiten que cualquier aplicativo sin importar el lenguaje de desarrollo, puedan beneficiarse de un conjunto de reglas de negocio y servicios, debido al cumplimiento de estándares SOAP, WSDL y XML.\n\nPara hacer uso de los Webservice, debe contar con un lenguaje de programación que pueda consumirlos, algunos lenguajes tienen mejor soporte que otros desde el punto de vista de facilidad de acceso; sin embargo, si no se cuenta con un lenguaje que encapsule la comunicación, siempre se puede hacer incluso a nivel de sockets usando el protocolo HTTP conjuntamente con la especificación SOAP.\n\nPara aquellos lenguajes que tienen un buen soporte lo más aconsejable es ir a través del WSDL para el Webservice.\n\nLa integración directa al medio de pago en general NO es recomendada, pues dificulta otros servicios que pueden estar implementados en la interfaz de Placetopay, al tiempo que hace que cada nuevo medio de pago liberado requiera un nuevo desarrollo por parte del comercio. Así que solo tener en cuenta esta integración si:\n\n* Completa flujo de transacción no disponible por redirección.\n* Usa el servicio a modo de marca blanca.\n\nComo cualquier proceso de integración, este requerirá una certificación del personal de soporte de Placetopay para revisar temas de funcionamiento, mejores prácticas y usabilidad.\n\n**¿Qué obligaciones tengo al usar esta integración?**\n\nTen en cuenta que al usar este tipo de integración, se requiere de certificación y los tiempos de implementación pueden ser mucho más altos que cuando se integra por `WebCheckOut`.\n\n**Captura de la información**\n\nAl consumir el servicio de creación de la transacción, tu aplicación debe proveer información sobre el pagador, el comprador y la transacción. Si corresponden a la misma persona, solamente deberás especificar la información del pagador.\n\nPara proveer estos datos, tu aplicación deberá capturarlos directamente en el proceso o de alguna fuente de información previamente habilitada.\n\n`Recomendamos tener un certificado digital SSL para tu sitio.`\n\n`El lenguaje de preferencia para la integracion debe tener soporte para TLS 1.2 o superior `\n\nA continuacion se describen los flujos de cada uno de los medios de pago para una mayor comprension\n\n**Flujo de integración AIM**\n\nCómo funciona la implementación?\n\n* Se hace una compilación de los datos a ser enviados a la plataforma, incluyendo los datos sensibles de la tarjeta (número, expiración, CVV2).\n\n* Se prepara la petición POST a nivel de servidor, tenga en cuenta que el servicio espera los datos en codificación **ISO-8859-1*. Los datos a ser remitidos a Placetopay dependerán de la operación que desea realizar.\n\n* Se hace el POST a Placetopay, y se espera por la respuesta. Normalmente los tiempos de respuesta son de 2 a 3 segundos, sin embargo tenga en cuenta que dependiendo de la congestión de la red u otros factores, el tiempo puede incrementarse. Verifique que en la implementación su script espera al menos hasta 15 o 20 segundos antes de dar un timeout.\n\n\n**Flujo de integración PSE**\n\n¿Cómo funciona la implementación?\n\n* Se muestra como opción de pago PSE (Débitos a cuentas de ahorro y corriente en Colombia).\n\n* Una vez el usuario la selecciona, se presenta la lista de bancos (debe estar cacheada localmente y su refrescamiento debe ser 1 vez por día) y el tipo de banca a desplegar (personas o empresas).\n\n* Al tiempo que el cliente confirma la operación, debe consumirse el servicio para realizar la petición de la transacción.\n\n* Si la petición es exitosa se retorna la URL a la cual debe enviarse al cliente para que realice la operación en el banco. En caso contrario se retorna el motivo del rechazo de la transacción.\n\n* Almacenar los datos de la transacción retornados por el servicio (identificador de la transacción, autorización/cus, identificador sesión de placetopay).\n\n* Redirigir el navegador a la URL retornada en caso de éxito.\n\n* Una vez la transacción retorna a la URL especificada en el consumo de crear transacción, se debe preguntar por el estado de la transacción mediante el consumo un servicio.\n\n* Dependiendo de la respuesta del servicio, la transacción puede haber sido aprobada, rechazada o seguir pendiente de procesamiento.\n\n* Informar al usuario el estado de la transacción.\n\n* Si la transacción está pendiente, o si el cliente al abandonar el portal no ha regresado, se debe tener una sonda que pregunte por el estado de la transacción.\n\n\n**Flujo de integración Tuya con tarjeta TUYA O EXITO:**\n\n¿Cómo funciona la implementación?\n\n* Se muestra como opción de pago Tarjeta Éxito y Tarjeta Alkosto (dependerá de si se tiene convenio para cada uno de los medios de pago).\n*Una vez el usuario la selecciona el medio de pago y confirma la operación, debe consumirse el servicio para realizar la petición de la transacción.\n\n* Si la petición es exitosa se retorna la URL a la cual debe enviarse al cliente para que realice la operación en en medio de pago. En caso contrario se retorna el motivo del rechazo de la transacción.\n\n* Almacenar los datos de la transacción retornados por el servicio (identificador de la transacción, autorización, identificador sesión de placetopay).\n* Redirigir el navegador a la URL retornada en caso de éxito.\n\n* Una vez la transacción retorna (retorna a la URL especificada en el consumo del crear transacción), se debe preguntar por el estado de la transacción mediante el consumo un servicio.\n\n* Dependiendo de la respuesta del servicio, la transacción puede haber sido aprobada, rechazada o seguir pendiente de procesamiento.\n\n* Informar al usuario el estado de la transacción.\n\n* Si la transacción está pendiente, o si el cliente al abandonar el portal no ha regresado, se debe tener una sonda que pregunte por el estado de la transacción.\n\n**Flujo de integración efectivo**\n\n* El establecimiento invoca el método addOrder para agregar una orden de pago en efectivo.\n\n* Si se desea eliminar una orden de pago se puede invocar al método deleteOrder, se debe tener en cuenta que la orden no podrá ser eliminada si ya ha sido pagada.\n\n* Eventualmente se puede invocar al método flushOrders que permite purgar las órdenes de pago que ya están vencidas y que no han sido pagadas.\n\n* Para obtener el PDF con las instrucciones para pagar la orden de efectivo se debe invocar el método getOrderPDF que retorna un PDF codificado en Base64.\n\n* Para consultar el estado de una transacción se puede invocar el método getOrder el cual brinda todos los datos de la orden incluyendo el estado y si está pagada la información de la transacción."
+  },
+  "servers": [
+    {
+      "url": "https://test.placetopay.com/soap/",
+      "description": "Modo pruebas"
+    },
+    {
+      "url": " https://test.placetopay.com/",
+      "description": "AIM modo pruebas"
+    }
+  ],
+  "paths": {
+    "pse/v11": {
+      "post": {
+        "summary": "Getbanklist",
+        "operationId": "post-pse/v11/?wsdl",
+        "responses": {
+          "200": {
+            "description": "**Bank[]**. Un arreglo con la lista de bancos habilitados.\n\n`La respuesta de este servicio debe ser cacheada.`\n\n`El servicio debe ser consumido una vez por día.`",
+            "content": {
+              "application/soap+xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <getBankList xmlns=\"https://placetopay.com/soap/pse\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n        </getBankList>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "Obtiene la lista de bancos disponibles para el establecimiento de comercio en el sistema PSE de ACH Colombia.\n\n**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación (Ir a la sesion de autenticacion para mas detalle)|"
+        },
+        "tags": [
+          "Servicio PSE"
+        ],
+        "description": "Una vez el cliente ha determinado que desea pagar con débito a una cuenta corriente o de ahorros, deberá presentarle la lista de los bancos que en el momento están disponibles para la transacción. Esta lista de bancos se obtiene mediante el consumo del método `getBankList` el cual debe ser consumido una vez por día, lo que exige que se disponga de un mecanismo de caché que permita recuperar la lista de este si ya ha sido consumido el servicio en el día.\n\nAdicional al darle  escoger con qué banco realizar la transacción, el usuario también debe indicar qué tipo de interfaz del banco desea desplegar, es decir, si la de personas o la de empresas.\n\nSi por algún motivo la lista de bancos no pudo ser obtenida, deberá mostrarse un mensaje “No se pudo obtener la lista de Entidades Financieras, por favor intente más tarde” y, consumir nuevamente el servicio de lista de bancos para intentar obtener dicha lista y poderla almacenar en el caché.\n\nTenga en cuenta que en operaciones de Multicrédito se debe utilizar el código de servicio para multicrédito y que siempre deberá pasar todas las cuentas dependientes (entidad, servicio) para los créditos así algunas de ellas vayan con valores en cero. Es requerido que la lista de créditos corresponda con todos los subcódigos dependientes."
+      },
+      "parameters": []
+    },
+    "/pse/v11": {
+      "post": {
+        "summary": "getTransactionInformation",
+        "operationId": "post-PSEGetTransaccionInformation",
+        "responses": {
+          "200": {
+            "description": "**TransactionInformation**. Información del estado de la transacción."
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <getTransactionInformation xmlns=\"https://placetopay.com/soap/pse\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n            <transactionID xmlns=\"\">1503290218</transactionID>\n        </getTransactionInformation>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "Obtiene la información de una transacción, debe ser consultado para cualquier operación previamente creada con el método createTransaction o `createTransactionMultiCredit` ya sea cuando regresa del banco o cuando al menos han transcurrido 7 minutos desde que el cliente fue redirigido a la interfaz del banco. Deberá consumirse en intervalos de al menos cada 12 minutos hasta que tenga un estado de transacción diferente a `PENDING`.\n\n**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación |\n| transactionID | int | Identificador único de la transacción en Placetopay, equivale al retornado en la creación de la transacción. |"
+        },
+        "tags": [
+          "Servicio PSE"
+        ],
+        "description": "Una vez el cliente ha finalizado la transacción en la interfaz del banco, el banco redirige al cliente a la URL especificada al crear la transacción, en este punto de entrada a su aplicativo, usted deberá consumir el servicio `getTransactionInformation` que le permite determinar el estado de la transacción. Solo si la transacción tiene como estado OK es porque la transacción fue autorizada, si por el contrario obtiene un estado **PENDING** es porque aún no tiene respuesta final del banco acerca de la transacción.\n\nYa sea que el cliente retorne al punto de reingreso y que la transacción esté pendiente, o que haya abandonado la operación y haya roto el flujo normal, se deberá consumir el servicio `getTransactionInformation` para todas las operaciones que desde que fue invocado el `createTransaction` llevan más de 7 minutos sin un estado final de operación"
+      },
+      "parameters": []
+    },
+    "pse/v11/": {
+      "post": {
+        "summary": "CreateTransaccion",
+        "operationId": "post-pse-v11",
+        "responses": {
+          "200": {
+            "description": "**PSETransactionResponse**. Respuesta de la creación de la transacción, tenga en cuenta que la URL del banco se entrega solo si la propiedad returnCode es `SUCCESS`."
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <createTransaction xmlns=\"https://placetopay.com/soap/pse\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n            <transaction xmlns=\"\">\n                <bankCode>1022</bankCode>\n                <bankInterface>0</bankInterface>\n                <returnURL>https://www.google.com/</returnURL>\n                <reference>123456</reference>\n                <description>Pago prueba</description>\n                <language>ES</language>\n                <currency>COP</currency>\n                <totalAmount>1000</totalAmount>\n                <taxAmount>0</taxAmount>\n                <devolutionBase>0</devolutionBase>\n                <tipAmount>0</tipAmount>\n                <payer>\n                    <documentType>CC</documentType>\n                    <document>1037390241</document>\n                    <firstName>Juan</firstName>\n                    <lastName>Chavarria</lastName>\n                    <emailAddress>juanchavarria@gmail.com</emailAddress>\n                    <address></address>\n                    <city>Medellin</city>\n                    <province>Antioquia</province>\n                    <country>Colombia</country>\n                    <phone>3106785678</phone>\n                    <mobile>3106785678</mobile>\n                    <postalCode></postalCode>\n                </payer>\n                <buyer>\n                    <documentType>CC</documentType>\n                    <document>1037390241</document>\n                    <firstName>Juan</firstName>\n                    <lastName>Chavarria</lastName>\n                    <emailAddress>juanchavarria@gmail.com</emailAddress>\n                    <address></address>\n                    <city>Medellin</city>\n                    <province>Antioquia</province>\n                    <country>Colombia</country>\n                    <phone>3106785678</phone>\n                    <mobile>3106785678</mobile>\n                    <postalCode></postalCode>\n                </buyer>\n                <ipAddress>191.95.158.135</ipAddress>\n                <userAgent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.104 Safari/537.36</userAgent>\n            </transaction>\n        </createTransaction>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "Solicita la creación de una transacción. En los datos de la solicitud se especifica quién es el pagador, el comprador y el despacho. Así mismo para cuál de los bancos habilitados se hace la petición y a que URL de retorno debe el banco redirigir al cuentahabiente.\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación | \n| transaction | PSETransactionRequest | Datos de la solicitud |\n\n**PSETransactionRequest**\n\nEstructura que representa una solicitud de transacción con débitos a cuenta PSE.\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| bankCode | string[4] | Código de la entidad financiera con la cual realizar la transacción. |\n| bankInterface | string[1] | Tipo de interfaz del banco a desplegar `0 = PERSONAS, 1 = EMPRESAS]` |\n| returnURL | string[255] | URL de retorno especificada para la entidad financiera. |\n| reference | string[32] | Referencia única de pago. |\n| description | description | Descripción del pago. |\n| language | string[2] | Idioma esperado para las transacciones acorde a **ISO 631-1**, mayúscula sostenida.|\n| currency | string[3] | Moneda a usar para el recaudo acorde a **ISO 4217**. |\n| totalAmount | double | Valor total a recaudar. |\n| taxAmount | double | Discriminación del impuesto aplicado. |\n| devolutionBase | double | Base de devolución para el impuesto. |\n| tipAmount | double | Propina u otros valores exentos de impuesto (tasa aeroportuaria) y que deben agregarse al valor total a pagar. |\n| payer | Person | Información del pagador. |\n| buyer | Person | Información del comprador. |\n| shipping | Person | Información del receptor. |\n| ipAddress | string[15] | Dirección IP desde la cual realiza la transacción el pagador. |\n| userAgent | string[255] | Agente de navegación utilizado por el pagador. | \n| additionalData | Attribute[] | Datos adicionales para ser almacenados con la transacción. |\n\n\nPerson\n\nEstructura para reflejar la información de una persona involucrada en una orden de pago.\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| document | string[12] | Número de identificación de la persona. |\n| documentType | string[3] | Tipo de documento de identificación de la persona. CC = Cédula de ciudadanía colombiana CE = Cédula de extranjería TI = Tarjeta de identidad PPN = Pasaporte NIT = Número de identificación tributaria SSN = Social Security Number |\n| lastName | string[60] | Apellidos |\n| company | string[60] | Nombre de la compañía en la cual labora o representa. |\n| emailAddress | string[80] | Correo electrónico. |\n| address | string[100] | Dirección postal completa. |\n| city | string[50] | Nombre de la ciudad coincidente con la dirección. |\n| province | string[50] | Nombre de la provincia o departamento coincidente con la dirección. |\n| country | string[2] | Código internacional del país que aplica a la dirección física acorde a **ISO 3166-1**, mayúscula sostenida. |\n| phone | string[30] | Número de telefonía fija. |\n| mobile | string[30] | Número de telefonía móvil o celular. |\n"
+        },
+        "tags": [
+          "Servicio PSE"
+        ],
+        "description": "Una vez se poseen los datos del pagador y/o comprador, así como la información de qué banco y qué tipo de interfaz debe mostrar el banco deberá entonces consumir el servicio de `createTransaction` para obtener la URL a la cual deberá redirigir al cliente para finalizar la transacción.\n\nDebe tener en cuenta que en los datos solicitados para crear la transacción se requiere la dirección IP desde la cual el cliente está realizando la transacción, así como la información del agente de navegación usado. Si lo desea, también puede proveer datos adicionales con la transacción, los cuales le permitirán tener esta información disponible en la consola de consulta de transacciones de Placetopay.\n\nSi la respuesta del servicio es SUCCESS, entonces deberá almacenar la información retornada en su base de datos, de vital importancia el `transactionId` pues es con este identificador que podrá consultar el estado final de la transacción.\n\nTenga en cuenta que una respuesta SUCCESS en este punto sólo implica que la transacción ha sido aprovisionada por el banco y está en espera que el cliente llegue a la interfaz del banco, se autentique y autorice la operación iniciada.\n\nAl crear la transacción, esta puede fallar; algunos motivos incluyen montos por fuera del rango permitido, no disponibilidad del banco, problemas de configuración de la cuenta recaudadora, entre otros. Utilice la propiedad `responseReasonText` para obtener el mensaje de por qué falló la creación de la transacción. Algunos códigos no relacionados con el pagador pueden indicarle que genere una alerta sobre problemas con la disponibilidad del servicio, particularmente los relacionados con mala configuración.\n\nUna vez ha almacenado la información en su base de datos y ha confirmado que es exitosa la petición, se redirigirá al cliente a la URL del banco. Tenga en cuenta que la redirección a la interfaz del banco no debe realizarse en un frame o cualquier otro mecanismo que oculte la URL en la cual el cliente ingresará sus datos de autenticación."
+      },
+      "parameters": []
+    },
+    "placetopay/v11/": {
+      "post": {
+        "summary": "getTransactionInformation",
+        "operationId": "post-placetopay-v11",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <getTransactionInformation xmlns=\"https://placetopay.com/soap/placetopay/\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n            <transactionID xmlns=\"\">1503452477</transactionID>\n        </getTransactionInformation>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "tags": [
+          "Servicio Tarjeta credito"
+        ],
+        "description": "Para aquellas transacciones que presentan una falla en los tiempos de respuesta, o que no puede ser verificado el `x_md5_hash`, se deberá consumir un Webservice para obtener de primera mano la información de la transacción.\n\nEn los casos que la transacción tiene respuesta pendiente, la regla general es que debe consumirse el servicio cada 12 minutos para las operaciones que tengan al menos 7 minutos de antigüedad. Esto implica que debe existir un proceso automático solicitando al webservice las operaciones que llevan más de 7 minutos pendientes y que el barrido debe hacerse cada 12 minutos.\n\n`Tenga en cuenta que en el proceso de certificación, se hará revisión de los consumos de sonda para que concuerden con los tiempos definidos.`\n\n `El metodo de autenticación para el webservice de sonda se mantiene.`"
+      },
+      "parameters": []
+    },
+    "/placetopay/v11/": {
+      "parameters": [],
+      "post": {
+        "summary": "queryTransaction",
+        "operationId": "post-placetopay-v11",
+        "responses": {
+          "200": {
+            "description": "**Transaction[]**. Transacciones que concuerdan con la solicitud."
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <queryTransaction xmlns=\"https://placetopay.com/soap/placetopay/\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n            <request xmlns=\"\">\n                <reference>7544</reference>\n                <currency>COP</currency>\n                <totalAmount>1.000,00</totalAmount>\n                <requestDate>2021-02-05</requestDate>\n            </request>\n        </queryTransaction>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación. |\n| request | QueryRequest | Parámetros para buscar la transacción. |\n\n**QueryRequest**\n\nEstructura para solicitar la búsqueda de una transacción.\n\n**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| reference | String[32] | Número de referencia, orden de compra o factura relacionada. (`x_invoice_num usado`). |\n| currency | String[3] | Moneda utilizada en la solicitud acorde a **ISO 4217**.|\n| totalAmount | double | Valor total de la operación, si es de aerolinea con TA debe ser la suma del valor del tiquete, la tasa aeroportuaria y la tarifa administrativa. |\n| requestDate | requestDate | Fecha de solicitud o creación de la transacción acorde a **ISO 8601**, se obvia la hora de la solicitud"
+        },
+        "tags": [
+          "Servicio Tarjeta credito"
+        ],
+        "description": "Consulta el estado de una transacción acorde a los parámetros usados, tenga en cuenta que la respuesta es un arreglo de transacciones.\n\nURL del servicio: \n\nPruebas: https://test.placetopay.com/soap/placetopay/v11/ \n\nProducción: https://api.placetopay.com/soap/placetopay/v11/"
+      }
+    },
+    "tuya/v11/": {
+      "post": {
+        "summary": "getTransactionInformation",
+        "operationId": "post-soap-tuya-v11",
+        "responses": {
+          "200": {
+            "description": "**TransactionInformation**. Información del estado de la transacción."
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <getTransactionInformation xmlns=\"https://placetopay.com/soap/tuya\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-06T00:56:56+01:00</seed>\n            </auth>\n            <transactionID xmlns=\"\">1503525790</transactionID>\n        </getTransactionInformation>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "Obtiene la información de una transacción, debe ser consultado para cualquier operación previamente creada con el método createTransaction ya sea cuando regresa del medio de pago o cuando al menos han transcurrido 7 minutos desde que el cliente fue redirigido a la interfaz del medio de pago. Deberá consumirse en intervalos de al menos cada 12 minutos hasta que tenga un estado de transacción `transactionState` diferente a `PENDING`.\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación |\n| transactionID | int | Identificador único de la transacción en Placetopay, equivale al retornado en la creación de la transacción. |"
+        },
+        "tags": [
+          "Servicio Tuya"
+        ],
+        "description": "Una vez el cliente ha finalizado la transacción en la interfaz del banco, el banco redirige al cliente a la URL especificada al crear la transacción, en este punto de entrada a su aplicativo, usted deberá consumir el servicio `getTransactionInformation` que le permite determinar el estado de la transacción. Solo si la transacción tiene como estado `OK` es porque la transacción fue autorizada, si por el contrario obtiene un estado `PENDING` es porque aún no tiene respuesta final del banco acerca de la transacción.\n\nYa sea que el cliente retorne al punto de reingreso y que la transacción esté pendiente, o que haya abandonado la operación y haya roto el flujo normal, se deberá consumir el servicio `getTransactionInformation` para todas las operaciones que desde que fue invocado el `createTransaction` llevan más de 7 minutos sin un estado final de operación."
+      },
+      "parameters": []
+    },
+    "tuya/v11": {
+      "post": {
+        "summary": "createTransaction",
+        "operationId": "post-soap-tuya-v11",
+        "responses": {
+          "200": {
+            "description": "**TuyaTransactionResponse**. Respuesta de la creación de la transacción, tenga en cuenta que la URL del medio de pago se entrega solo si la propiedad returnCode es `SUCCESS`.\n"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <createTransaction xmlns=\"https://placetopay.com/soap/tuya\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>c4864567c1d5595012af42d0f5aa1d4153151762</tranKey>\n                <seed>2021-02-06T22:24:38+01:00</seed>\n            </auth>\n            <transaction xmlns=\"\">\n                <franchise>TY_EX</franchise>\n                <returnURL>https://www.google.com/</returnURL>\n                <reference>123</reference>\n                <description>prueba</description>\n                <language>ES</language>\n                <currency>COP</currency>\n                <totalAmount>1000</totalAmount>\n                <taxAmount>0</taxAmount>\n                <devolutionBase>0</devolutionBase>\n                <tipAmount>0</tipAmount>\n                <payer>\n                    <documentType>CC</documentType>\n                    <document>3456324567</document>\n                    <firstName>Jhon</firstName>\n                    <lastName>Doe</lastName>\n                    <emailAddress>ejemplo@correo.com</emailAddress>\n                    <address>cra 56 34-67</address>\n                    <city>Medellin</city>\n                    <province>Antioquia</province>\n                    <country>Colombia</country>\n                    <phone>3107865</phone>\n                    <mobile>3107865768</mobile>\n                </payer>\n                <buyer>\n                    <documentType>CC</documentType>\n                    <document>3456324567</document>\n                    <firstName>Jhon</firstName>\n                    <lastName>Doe</lastName>\n                    <emailAddress>ejemplo@correo.com</emailAddress>\n                    <address>cra 56 34-67</address>\n                    <city>Medellin</city>\n                    <province>Antioquia</province>\n                    <country>Colombia</country>\n                    <phone>3107865</phone>\n                    <mobile>3107865768</mobile>\n                </buyer>\n                <ipAddress>192.168.1.34</ipAddress>\n                <userAgent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36</userAgent>\n            </transaction>\n        </createTransaction>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "Solicita la creación de una transacción. En los datos de la solicitud se especifica quien es el pagador, el comprador y el despacho. Así mismo para cuál de los medios de pago habilitados se hace la petición y a que URL de retorno debe el medio de pago redirigir al tarjeta habiente.\n\n**PARÁMETROS**\n\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación. |\n| transaction | TuyaTransactionRequest | Datos de la solicitud. |\n\n**TuyaTransactionRequest**\n\nEstructura que representa una solicitud de transacción con tarjetas expedidas por TUYA.\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| franchise | string[4] | Código del medio de pago `TY_EX = Tarjeta Éxito, TY_AK = Tarjeta Alkosto` |\n| returnURL | string[255] | URL de retorno especificada para la entidad financiera. |\n| reference | string[32] | Referencia única de pago. |\n| description | \tstring[255] | Descripción del pago. |\n| language | string[2] | Idioma esperado para las transacciones acorde a **ISO 631-1**, mayúscula sostenida.|\n| currency | string[3] | Moneda a usar para el recaudo acorde a **ISO 4217**. |\n| totalAmount | double | Valor total a recaudar. |\n| taxAmount | double | Discriminación del impuesto aplicado. |\n| devolutionBase | double | Base de devolución para el impuesto. |\n| tipAmount | double | Propina u otros valores exentos de impuesto (tasa aeroportuaria) y que deben agregarse al valor total a pagar. |\n| payer | Person | Información del pagador. |\n| buyer | Person | Información del comprador. |\n| shipping | Person | Información del receptor. |\n| ipAddress | string[15] | Dirección IP desde la cual realiza la transacción el pagador. |\n| userAgent | string[255] | Agente de navegación utilizado por el pagador. |\n| additionalData | Attribute[] | Datos adicionales para ser almacenados con la transacción. |\n\n\nPerson\n\nEstructura para reflejar la información de una persona involucrada en una orden de pago.\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| document | string[12] | Número de identificación de la persona. |\n| documentType | string[3] | Tipo de documento de identificación de la persona. CC = Cédula de ciudadanía colombiana CE = Cédula de extranjería TI = Tarjeta de identidad PPN = Pasaporte NIT = Número de identificación tributaria SSN = Social Security Number |\n| lastName | string[60] | Apellidos |\n| company | string[60] | Nombre de la compañía en la cual labora o representa. |\n| emailAddress | string[80] | Correo electrónico. |\n| address | string[100] | Dirección postal completa. |\n| city | string[50] | Nombre de la ciudad coincidente con la dirección. |\n| province | string[50] | Nombre de la provincia o departamento coincidente con la dirección. |\n| country | string[2] | Código internacional del país que aplica a la dirección física acorde a **ISO 3166-1**, mayúscula sostenida. |\n| phone | string[30] | Número de telefonía fija. |\n| mobile | string[30] | Número de telefonía móvil o celular. |\n"
+        },
+        "tags": [
+          "Servicio Tuya"
+        ],
+        "description": "Una vez ya se tengan los datos del pagador y comprador, así como la información de qué medio de pago usará, deberá entonces consumir el servicio de createTransaction para obtener la URL a la cual deberá redirigir al cliente para finalizar la transacción.\n\nDebe tener en cuenta que en los datos solicitados para crear la transacción se requiere la dirección IP desde la cual el cliente estará realizando la transacción, así como la información del agente de navegación usado. Si lo desea, también puede proveer datos adicionales con la transacción, los cuales le permitirán tener esta información disponible en la consola de consulta de transacciones de Placetopay. Tenga en cuenta que el documento del pagador es el documento del dueño de la tarjeta y que no podrá ser modificado posteriormente en la interfaz de TUYA para ese medio de pago.\n\nSi la respuesta del servicio es `SUCCESS`, entonces deberá almacenar la información retornada en su base de datos, de vital importancia el `transactionID` pues es con este identificador que podrá consultar el estado final de la transacción.\n\nTenga en cuenta que una respuesta `SUCCESS` en este punto sólo implica que la transacción ha sido aprovisionada por TUYA y está en espera que el cliente llegue a la interfaz del medio de pago, se autentique y autorice la operación iniciada.\n\nAl crear la transacción, esta puede fallar; algunos motivos incluyen montos por fuera del rango permitido, no disponibilidad del medio de pago, problemas de configuración de la cuenta recaudadora, entre otros. Utilice el parametro `responseReasonText` para obtener el mensaje de por qué falló la creación de la transacción. Algunos códigos no relacionados con el pagador pueden indicarle que genere una alerta sobre problemas con la disponibilidad del servicio, particularmente los relacionados con mala configuración.\n\nUna vez ha almacenado la información en su base de datos y ha confirmado que es exitosa la petición, se redirigirá al cliente a la URL del medio de pago. Tenga en cuenta que la redirección a la interfaz del medio de pago no debe realizarse en un frame o cualquier otro mecanismo que oculte la URL en la cual el cliente ingresará sus datos de autenticación."
+      },
+      "parameters": []
+    },
+    "cashorder/": {
+      "post": {
+        "summary": "addOrder",
+        "operationId": "post-cashorder",
+        "responses": {
+          "200": {
+            "description": "**int**. La referencia única de la orden de pago en Placetopay."
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/xop+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <addOrder xmlns=\"https://www.placetopay.com/soap/cashorder/\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n            <order xmlns=\"\">\n                <reference>123456</reference>\n                <description>123</description>\n                <language>ES</language>\n                <currency>COP</currency>\n                <totalAmount>1000</totalAmount>\n                <taxAmount>0</taxAmount>\n                <subtotalAmount>0</subtotalAmount>\n                <expiration>2021-02-08T17:47:59-05:00</expiration>\n                <buyer>\n                    <documentType>CC</documentType>\n                    <document>1037678567</document>\n                    <firstName>Jhon</firstName>\n                    <lastName>Doe</lastName>\n                    <emailAddress>ejemplo@correo.com</emailAddress>\n                    <address>cra 45 67-78</address>\n                    <city>Medellin</city>\n                    <province>Antioquia</province>\n                    <phone>3105675689</phone>\n                    <mobile>3105675689</mobile>\n                </buyer>\n                <ipAddress>192.168.2.34</ipAddress>\n                <userAgent>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36</userAgent>\n                <notificationURL>https://www.google.com/</notificationURL>\n            </order>\n        </addOrder>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | datos de autenticación. |\n| order | CashOrder | datos de la orden de pago. |\n\n**CashOrder**\n\nEstructura con la información de una orden de pago en efectivo.\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| reference | string[32] | Referencia única de pago. |\n| description | string[255] | Descripción o detalle de la orden de pago. |\n| language | string[2] | Idioma esperado para las transacciones acorde a **ISO 631-1**, usar ES. |\n| currency | string[3] | Código de la moneda acorde a ISO 4217 en la cual está expresado el cobro, usar COP. |\n| totalAmount | decimal | Valor total a recaudar. |\n| taxAmount | decimal | Discriminación del impuesto aplicado. |\n| subtotalAmount | decimal | Valor base antes de impuestos. |\n| expiration | datetime | Fecha y hora máxima hasta la cual se recibe el pago [AAAA-MM-DDTHH:NN:SS] | \n| buyer | Person | Información del comprador. |\n| ipAddress| string | Dirección IP desde la cual realiza la solicitud el pagador. |\n| userAgent | string | Agente de navegación utilizado por el pagador al hacer la solicitud. |\n| additionalData | Attribute[] | Datos adicionales para ser almacenados con la transacción. |\n| notificationURL | string[255] | URL de notificación una vez la transacción es realizada. |"
+        },
+        "tags": [
+          "Servicio Efectivo"
+        ],
+        "description": "Agrega una orden de pago para efectivo."
+      },
+      "parameters": []
+    },
+    "/cashorder/": {
+      "post": {
+        "summary": "getOrder",
+        "operationId": "post-cashorder",
+        "responses": {
+          "200": {
+            "description": "**CashOrderInfo**. Información de la orden, si la orden no existe el estado de la orden será NOT_FOUND, si hay un error al consultar el registro se retornará una excepción SoapFault."
+          }
+        },
+        "description": "Obtiene la información de una orden de pago en efectivo para conocer su estado.",
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <getOrder xmlns=\"https://www.placetopay.com/soap/cashorder/\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n            <id xmlns=\"\">306133</id>\n        </getOrder>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación. |\n| id | int | Referencia única de la orden de pago a consultar. |"
+        },
+        "tags": [
+          "Servicio Efectivo"
+        ]
+      },
+      "parameters": []
+    },
+    "/cashorder": {
+      "post": {
+        "summary": "deleteOrder",
+        "operationId": "post-cashorder",
+        "responses": {
+          "200": {
+            "description": "**int**. Número de registros eliminados, si es un cero indicará que el registro no fue hallado, si hay un error al eliminar el registro se retornará una excepción `SoapFault`."
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <deleteOrder xmlns=\"https://www.placetopay.com/soap/cashorder/\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n            <id xmlns=\"\">306133</id>\n        </deleteOrder>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación. |\n| id | int | Referencia única de la orden de pago a eliminar. |\n"
+        },
+        "description": "Elimina una orden de pago en Placetopay que no haya sido pagada.",
+        "tags": [
+          "Servicio Efectivo"
+        ]
+      }
+    },
+    "cashorder": {
+      "post": {
+        "summary": "getOrderPDF",
+        "operationId": "post-cashorder",
+        "responses": {
+          "200": {
+            "description": "base64Binary. PDF generado codificado como base64, si hay un error al generar el PDF se retornará una excepción `SoapFault`."
+          }
+        },
+        "description": "Genera el PDF para el pago en efectivo en la red de corresponsales que actualmente se permita. Para la fecha de este documento esta red involucra a corresponsales del grupo AVAL/ATH, Baloto, Efecty, cajas de Almacenes Éxito, Carulla, Surtimax y Súper Inter. Así como cajeros electrónicos del grupo AVAL. Próximamente la red de oficinas de Bancolombia.",
+        "requestBody": {
+          "content": {
+            "application/soap+xml": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo": {
+                  "value": "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <Body>\n        <getOrderPDF xmlns=\"https://www.placetopay.com/soap/cashorder/\">\n            <auth xmlns=\"\">\n                <login>6a95d841f363dc91faa1e5d2f4d437c5</login>\n                <tranKey>d211a0fd5490252d0cbad1c84a2e5c3fa9e42d38</tranKey>\n                <seed>2021-02-02T00:56:56+01:00</seed>\n            </auth>\n<id xmlns=\"\">306133</id>\n        </getOrderPDF>\n    </Body>\n</Envelope>"
+                }
+              }
+            }
+          },
+          "description": "| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación. |\n| id | int | Referencia única de la orden de pago generada. |"
+        },
+        "tags": [
+          "Servicio Efectivo"
+        ]
+      },
+      "parameters": []
+    },
+    "gateway/": {
+      "post": {
+        "summary": "CreateTransaccion",
+        "operationId": "post-placetopay-v11",
+        "responses": {
+          "200": {
+            "description": "**Trama de respuesta**\nA continuación se detalla la trama de respuesta para cualquiera de las operaciones definidas por el servicio AIM.\n\nLa trama de respuesta consiste en una cadena de caracteres separados por coma en el siguiente orden posicional.\n\n| Campo | Tipo | Observación |\n|------|------|-------|\n| x_response_code | Integer | (1)Respuesta a la transacción solicitada. 0: Error 1: Aprobada 2: Declinada 3: Pendiente |\n| x_response _subcode | String[5] | (2) Código interno que acompaña la respuesta. |\n| x_response _reason_code | String[3] | (3) Código de la razón que por la cual se dió la respuesta. |\n| x_response _reason_text | String[255] | (4) Mensaje de la razón por la cual se dio la respuesta. |\n| x_approval _code | String[10] | (5) Código de aprobación entregado por la entidad financiera. |\n| x_avs_ result_code | String[1] | (6) Resultado de la validación de los datos de dirección del comprador. Actualmente se retorna S: Servicio no soportado |\n| x_transaction_id | String[10] | (7)Identificador de la transacción establecido por la red. |\n| x_invoice_num |  | (8) Copia del dato recibido. |\n| x_description |  | (9) Copia del dato recibido |\n| x_amount |  | (10) Copia del dato recibido |\n| x_method |  | (11) Copia del dato recibido |\n| x_type |  | (12) Copia del dato recibido |\n| x_cust_id |  | (13) Copia del dato recibido |\n| x_first_name |  | (14) Copia del dato recibido |\n| x_last_name |  | (15) Copia del dato recibido |\n| x_company |  | (16) Copia del dato recibido |\n| x_address |  | (17) Copia del dato recibido |\n| x_city |  | (18) Copia del dato recibido |\n| x_state |  | (19) Copia del dato recibido |\n| x_zip |  | (20) Copia del dato recibido |\n| x_country |  | (21) Copia del dato recibido |\n| x_phone |  | (22) Copia del dato recibido |\n| x_fax |  | (23) Copia del dato recibido |\n| x_email |  | (24) Copia del dato recibido |\n| x_ship_to_first_name |  |(25) Copia del dato recibido |\n| x_ship_to_last_name |  | (26) Copia del dato recibido |\n| x_ship_to_company |  | (27) Copia del dato recibido |\n| x_ship_to_address |  | (28) Copia del dato recibido |\n| x_ship_to_city |  | (29) Copia del dato recibido |\n| x_ship_to_state |  | (30) Copia del dato recibido |\n| x_ship_to_zip |  | (31) Copia del dato recibido |\n| x_ship_to_country |  | (32) Copia del dato recibido |\n| x_tax |  | (33) Copia del dato recibido |\n| x_duty |  | (34) Mantenido por compatibilidad |\n| x_freight |  | (35) Mantenido por compatibilidad |\n| x_tax_exempt |  |(36)  Mantenido por compatibilidad |\n| x_po_num |  | (37) Mantenido por compatibilidad |\n| x_md5_hash | String[32] | (38) MD5 del valor de `md5HashKey + x_login + x_transaction_id + x_amount`; el amount va formateado con dos decimales. El hash es un valor establecido en la plataforma. Sirve para comprobar la estabilidad de la trama. |\n| x_CVV2_response | String[1] | (39) Indicador de comprobación del CVV2. |\n| x_CAVV_response | String[1] | (40) Indicador de comprobación del CAVV |\n| x_bank_currency | String[3] | (41) Código de la moneda con la cual se hizo el recaudo. |\n| x_bank_factor | Decimal | (42) Tasa de conversión de la moneda original vs la moneda de recaudo. |\n| x_bank_amount | Decimal | (43) Valor recaudado convertido a la moneda esperada por la entidad financiera. |\n| x_franchise | String[5] | (44) Código de la franquicia con la cual se hizo el pago. CR_CR => Credencial CR_DN => Diners CR_AM => AMEX CR_VS => Visa CR_MC => Mastercard |\n| x_bank_name | String[30] | (45) Nombre del banco que autorizó la transacción (no siempre disponible) |\n| x_placetopay_id | String[32] | (46) Identificador único de la transacción retornado por Placetpay |\n| x_ta_response_code |  | (47) |\n| x_ta_response _reason_code |  | (48) |\n| x_ta_approval_code |  | (49) |\n| x_ta_transaction_id |  | (50) |\n| x_placetopay_ internal_reference | Int | (51) Referencia interna en Placetopay enviada a la red como referencia de la transacción |\n| x_response_ reason_code_b24 | String[3] | (52) Código BASE24 equivalente al código ISO que llega en `x_response_reason_code` |\n| x_truncated_pan | String[16] | (53) Número de tarjeta de crédito truncado admisible para ser visualizado |\n| x_discount_code | String[32] | (54) Código de descuento aplicado. Un valor en blanco en este campo hace que los datos descuento de los demás campos tampoco deban tenerse en cuenta. |\n| x_discount_type | String[20] | (55) Tipo de descuento aplicado. MERCHANT => Provisto por el comercio FRANCHISE => Provisto por el medio de pago OTHER => Provisto por otro actor |\n| x_discount_amount | Decimal | (56) Valor total del descuento en la misma moneda de la solicitud |\n| x_discount_base | Decimal | (57)Valor base sobre el cual fue aplicado el descuento |\n| x_discount_percent | Decimal | (58) Valor porcentual equivalente del descuento |\n|  |  | (59) De la posición 59 a 68 se reserva para usos futuros. |\n|  |  | (69) A partir de esta posición se retransmiten los datos adicionales recibidos del comercio. |\n"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "Ejemplo Operación transacción": {
+                  "value": {
+                    "x_login": "18a56629d4f697e506788c57d90ea53a",
+                    "x_tran_key": "5313b5e04ea575f59c85283f989750202c3337d4",
+                    "x_address": "cra 45 78-67",
+                    "x_currency_code": "COP",
+                    "x_email_merchant": "FALSE",
+                    "x_email_customer": "FALSE",
+                    "x_description": "Prueba",
+                    "x_state'": "Antioquia",
+                    "x_type": "AUTH_ONLY",
+                    "x_zip": "19438",
+                    "x_test_request'": "TRUE",
+                    "x_method": "CC",
+                    "x_last_name": "Doe",
+                    "x_email": "ejemplo@correo.com",
+                    "x_fax": "3104567868",
+                    "x_country": "Colombia",
+                    "x_delim_data": "FALSE",
+                    "x_invoice_num": "123456",
+                    "x_first_name": "Jhon",
+                    "x_recurring_billing": "FALSE",
+                    "x_relay_response": "FALSE",
+                    "x_customer_ip": "192.168.1.23",
+                    "x_version": "2.0",
+                    "x_language": "ES",
+                    "x_company": "NA",
+                    "x_phone": "3104567867",
+                    "x_cust_id": "CC 1037678456",
+                    "x_duplicate_window": "0",
+                    "x_city": "Medellin",
+                    "x_po_num": "000188420",
+                    "x_card_code": "123",
+                    "x_exp_date": "12/22",
+                    "x_card_num": "4111111111111111",
+                    "x_amount": "1000",
+                    "x_amount_base": "0",
+                    "x_tax": "0",
+                    "x_differed": "1"
+                  }
+                },
+                "Ejemplo Cobro con Split": {
+                  "value": {}
+                },
+                "Ejemplo Cobro recurrencia": {
+                  "value": {}
+                }
+              }
+            }
+          },
+          "description": "**ATRIBUTOS**\n\n| Nombre | Tipo | Valor posible | Descripción |\n|-----------|------|------|-------------|\n| x_version | String[3] | 2.0 | Versión de la trama a ser usada para comunicarse con Placetopay. |\n|x_delim_data | String[5] | TRUE | Indicador de que los datos de respuesta van delimitados (el delimitador es la coma). |\n| x_relay_response | String[5] | FALSE | Indicador de si no espera la respuesta. |\n| x_language | String[2] |  | \tCódigo del idioma acorde a ISO 631-1 en que se dan las notificaciones en la plataforma. Por defecto es ES (español). |\n\n**Datos del comercio y operación**\n\n| Nombre | Tipo | Valor posible | Descripción |\n|-----------|------|------|-------------|\n| x_login | String[32] |  | Identificador del sitio del comercio en la Plataforma. |\n| x_tran_key | String[16] |  | Clave para poder enviar una transacción. |\n| x_test_request | String[5] | TRUE / FALSE | Indicador de si la transacción va en modo de prueba o no. Por defecto es FALSE (producción). |\n| x_type | String[12] | AUTH_ONLY / CAPTURE_ONLY / CREDIT / SETTLE / VOID | Tipo de operación a realizar. |\n| x_method | String[2] | CC | Método usado para el procesamiento. |\n| x_email_merchant | String[5] | TRUE / FALSE | Indicador de si debe enviarse un correo electrónico al comercio cuando haya una transacción exitosa. |\n| x_email_customer | String[5] | TRUE / FALSE | \tIndicador de si debe enviarse un correo electrónico al pagador cuando haya una transacción exitosa |\n| x_customer_ip | String[15] |  | Dirección IP desde la cual está realizando el pago el usuario pagador. |\n\n**Datos del cobro**\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Valor posible | Descripción |\n|-----------|------|------|-------------|\n| x_invoice_num | String[32] | | Número de referencia, orden de pedido o factura relacionada. |\n| x_description | String[255] | | Descripción de la compra. |\n| x_currency_code | String[3] | | Código de la moneda acorde a ISO 4217 en la cual está expresado el cobro. |\n| x_amount | Decimal [9.2] | | Valor total de la compra incluyendo impuestos. |\n| x_tax | Decimal [9.2] | | Valor total de los impuestos. |\n| x_amount_base | Decimal [9.2] ||Valor base de devolución de impuestos (solo aplica para Colombia en los casos en que el impuesto sea del 16% o 10%). Se define como el valor sobre el cual fue calculado el impuesto. Por lo tanto si no hay impuesto, no hay base de devolución. |\n| x_token | String[64] | | Token a ser usado, en el caso de que haya tokenizado los datos de la tarjeta. |\n| x_card_num | String[16] | | Número de la tarjeta, no requerido si usa token. |\n| x_card_type | String[1] | C / A / R | Tipo de la tarjeta, no requerido si usa token. C = crédito   A = débito ahorros R = débito corriente |\n| x_exp_date | String[12] | | Fecha de vencimiento de la tarjeta, no requerido si usa token, se aceptan los siguientes formatos: MMAA, MMAAAA, AAAAMMDD, AAAA/MM/DD, AAAA-MMDD. |\n| x_card_code | String[4] | | Dígitos de verificación de la tarjeta (CVV2). |\n| x_differed | Integer | 1 - 36 | Número de cuotas a las cuales difiere el pago. En su ausencia se supone a una cuota. |\n\n**Datos para cobros recurrentes**\n\nTenga en cuenta que los valores de recurrencia son todos requeridos si el valor del campo `x_recurring_bill` es `TRUE`. Estos datos no tienen sentido en otro caso.\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Valor posible | Descripción |\n|-----------|------|------|-------------|\n| x_recurring_bill | String[5] | TRUE / FALSE | Indicador de si la transacción es recurrente. En su ausencia se supone `FALSE`.\n| x_recurring_periodicity | String [1] | Y / M / D | Periodicidad para volver a enviar la transacción. Y = anual M = mensual D = diaria |\n| x_recurring_interval | Integer | | El intervalo aplicado a la periodicidad, por ejemplo si el intervalo es 3 y la periodicidad es M, entonces se estará haciendo el cobro trimestralmente. En su ausencia se supone uno (1). |\n| x_recurring_max_periods | Integer | | |\n| x_recurring_due_date | String[10] | | Parte del control de número de veces que se realiza el cobro, corresponde a la fecha hasta la cual se sucederá la recurrencia.Debe establecerse como una fecha en formato AAAA-MM-DD. Si no se desea establecer un máximo debe indicarse `UNLIMITED`. Debe especificarse este parámetro o en su defecto `x_recurring_max_periods`. |\n\n**Datos para cobros con Split**\n\nTenga en cuenta que para pago con dispersión de fondos el comercio debe estar marcado en Placetopay para soportar este tipo de operaciones. De igual forma el `x_airline` debe llegar en la trama con un código de convenio válido, de lo contrario no hay dispersión y solo se realiza el cobro del valor especificado en `x_amount`.\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Valor posible | Descripción |\n|-----------|------|------|-------------|\n| x_airline | Int | | Código del convenio, cuando se especifica; los valores dados en `x_amount` serán cobrados a favor de la entidad del convenio. Así mismo se habilita el cobro del valor dado en el `x_service_fee`. |\n| x_airport_tax | Decimal [8,2] | | Valor de la tasa aeroportuaria, solo aplica cuando el convenio es una aerolínea. |\n| x_service_fee_code | Int | 99 | Código de compensación para cuando hay dispersión de fondos. Identifica que el `valor del x_service_fee` será a favor del establecimiento que solicitó la transacción. |\n| x_service_fee | Decimal [8,2] | | Valor total de la tasa administrativa incluyendo impuestos, este será el valor recaudado a nombre del establecimiento. |\n| x_service_fee_tax | Decimal [8,2] | | Valor total del impuesto de la tasa administrativa. |\n| x_service_fee_base | Decimal [8,2] | | Valor base de devolución de impuestos para la TA (solo aplica para Colombia en los casos en que el impuesto sea del 16% o 10%). |\n\n**Datos del pagador**\n\n| Nombre | Tipo | Valor posible | Descripción |\n|-----------|------|------|-------------|\n| x_cust_id | String [20] | | Identificación del pagador, está conformado por el tipo de documento y el documento, separados entre ellos por un espacio. Los tipos de documento válidos son: CC: Cédula de ciudadanía colombiana CE: Cédula de extranjería TI: Tarjeta de identidad NIT: Número de identificación tributaria PPN: Pasaporte SSN: Social security number Un ejemplo del dato puede ser: CC 71000000.|\n| x_first_name | String[30] | | Nombres completos. |\n| x_last_name | String[30] | | Apellidos completos. |\n| x_company | String[50] | | |\n| x_address | String[80] | | Dirección de correspondencia. |\n| x_city | String[30] | | Ciudad. |\n| x_state | String[30] | | Estado, departamento o provincia. |\n| x_zip | String[10] | | Código postal. |\n| x_country | String[2] | | Código del país acorde a ISO 3166-1. |\n| x_phone |String[30] | | Número de telefonía fija prefereriblemente: +indicativo (zona) teléfono. |\n| x_fax | String[30] | | Número de fax, Prefereriblemente: +indicativo (zona) teléfono |\n| x_mobile | String[30] | | Número de fax / móvil, prefereriblemente: +indicativo (zona) teléfono |\n| x_email | String[50] | | Dirección de correo electrónico. |\n\n**Datos del comprador o beneficiario receptor del bien o servicio**\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Valor posible | Descripción |\n|-----------|------|------|-------------|\n| x_ship_to_id | String [20] | | Identificación del comprador, está conformado por el tipo de documento y el documento, separados entre ellos por un espacio. Los tipos de documento válidos son: CC: Cédula de ciudadanía colombiana CE: Cédula de extranjería TI: Tarjeta de identidad NIT: Número de identificación tributaria PPN: Pasaporte SSN: Social security number Un ejemplo del dato puede ser: CC 71000000.|\n| x_ship_to_first_name | String[30] | | Nombres completos. |\n| x_ship_to_last_name | String[30] | | Apellidos completos. |\n| x_ship_to_company | String[50] | | Compañía para la cual labora. |\n| x_ship_to_address | String[80] | | Dirección de correspondencia. |\n| x_ship_to_city | String[30] | | Ciudad. |\n| x_ship_to_state | String[30] | | Estado, departamento o provincia. |\n| x_ship_to_zip | String[10]| | Código postal. |\n| x_ship_to_country | String[2] | | Código del país acorde a ISO 3166-1. |\n| x_ship_to_phone | String[30] | | Número de telefonía fija,prefereriblemente: +indicativo (zona) teléfono |\n| x_ship_to_mobile | String[30] | | Número de celular / móvil,prefereriblemente: +indicativo (zona) teléfono |\n| x_ship_to_email | String[50] | | Dirección de correo electrónico. |\n\n**Datos para operaciones sobre transacciones**\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Valor posible | Descripción |\n|-----------|------|------|-------------|\n| x_franchise | String[5] | | Código de la franquicia con la cual se hizo el pago. |\n| x_approval_code | String[10] | | Código de aprobación entregado por la entidad financiera en la transacción original. |\n| x_transaction_id | String[10]  | | Número único de la transacción proveniente de la transacción original. |\n| x_parent_session | String[32] | | Identificador interno de la transacción que se desea asentar o anular, corresponde al `x_placetopay_id`. |\n\n**Datos adicionales para almacenar con la transacción**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|------|-------------|\n| x_additional_data | Array | | Utilice esta estructura para enviar datos adicionales a Placetopay que desea almacenar conjuntamente con la transacción. Básicamente este campo actua como un diccionario de datos tipo clave => valor. La clave tiene restricciones de forma, no puede iniciar con un número y solo debe contener letras no acentuadas, números, guiones medios o guiones de piso. Tiene una longitud máxima de 30 caracteres. El valor tiene una longitud máxima de 255 caracteres.  Ej: `x_additional_data[dato1] = “Hola”  x_additional_data[otroDato] = “Mundo”`\n\n"
+        },
+        "description": "El método de integración avanzado o AIM, contempla las operaciones básicas para el procesamiento de tarjetas no presenciales, esto es la autorización, captura, reverso, asiento, anulación. A continuación se describirán cada uno de los usos y los datos requeridos en la trama para cada uno de los casos. La respuesta para cada operación está unificada en un solo tipo de trama resultante. La implementación de este método se hizo pensando en minimizar el ancho de banda requerido para la comunicación así como la facilidad de implementación en cualquier lenguaje de programación que sea capaz de establecer una comunicación por sockets a través del protocolo HTTPS.\n\n** ¿En qué casos es mejor usar este tipo de integración? **\n\nLa integración AIM se recomienda únicamente en los casos que no sea factible que el usuario realice la transacción ingresando los datos sensibles en Placetopay o en donde se requiere un control particular de la operación. Algunos ejemplos son:\n\n* Cobros recurrentes desde una base de datos propietaria.\n* Integración con un sistema de audiorespuesta.\n* Múltiples transacciones a diferentes recaudadores con la misma información del tarjetahabiente.\n* Interfaz móvil propietaria, no basada en HTML.\n* Integración con sistemas cuya entrada de los datos sensibles no la realice directamente el tarjetahabiente.\n\n**¿Qué obligaciones tengo al usar esta integración?**\n\nTenga en cuenta que al usar este tipo de integración, usted está suministrando todos los datos del comprador incluyendo los datos sensibles de la tarjeta, este solo hecho requiere que la captura de la información sea por un mecanismo seguro que no ponga en peligro los datos del tarjetahabiente. Si la información la captura por una página Web, el punto donde se capturan estos datos debe estar sobre protocolo seguro HTTPS usando certificados de seguridad expedidos por una entidad certificadora acreditada.\n\nSi la captura la realiza por un Call Center, quien obtiene los datos sensibles debe ser un mecanismo de IVR (Interactive Voice Response) o audiorespuesta; esto implicaría un rompimiento en el proceso entre el proceso que realiza el operador con su CRM y el IVR quien captura los datos sensibles. Finalmente el CRM consolida los dos conjuntos de datos y los remite a Placetopay.\n\nSi la captura proviene de una base de datos de tarjetas previamente inscritas, asegúrese que esta información está encriptada por un mecanismo seguro de encriptación como AES o 3DES, desencripte solo en el momento en que construye la trama a ser enviada a Placetopay.\n\n`Placetopay tiene servicios de tokenización que pueden ser usados.`\n\nTenga en cuenta que como regla general usted no debe almacenar el número de tarjeta, fecha de vencimiento y CVV2. Estos solo pueden tener persistencia durante la solicitud de la autorización, una vez procesada no deben ser almacenados.\n\n**Metodos de interfaz credito Colombia **\n\nA continuación se describen las tramas que deben ser enviadas a Placetopay para que la plataforma procese una operación, de igual forma la trama de respuesta entregada por la plataforma.\n\n**Solicitud de autorización**\n\nEste tipo de solicitud permite realizar un cobro en línea. Esta operación se logra remitiendo el valor `AUTH_ONLY` en la variable `x_type`.\n\n** Solicitud de captura **\n\nEste tipo de operación preprocesa la transacción y la deja en estado pendiente. Posteriormente se deberá realizar una operación de asiento o de anulación. Esta operación se logra remitiendo el valor `CAPTURE_ONLY` en la variable `x_type`.\n\n**Solicitud de asiento o anulación de captura**\n\nOperación complementaria a la de captura. Tiene como objetivo terminar el cobro de la operación o en su defecto cancelar la solicitud. Esta operación se logra remitiendo los valores de `SETTLE` o `VOID` en la variable `x_type` dependiendo de si se desea asentar o anular.\n\n**Solicitud de reverso**\n\nUna operación de reversa tiene sentido sobre una transacción previamente aprobada. Tenga en cuenta que actualmente hay una restricción para la reversa, y esta solo puede solicitarse el mismo día de la transacción aprobada con un límite de las 10:00pm hora colombiana. Tenga en cuenta que una transacción de reversa puede declinar y que dependerá del banco emisor dar o no la autorización, igual que lo hace con una autorización.\n\n**Envío de transacciones de prueba**\n\nEn la plataforma, los comercios pueden estar en pruebas o producción. Dependiendo de este modo preconfigurado tiene sentido el parámetro `x_test_request`; así mismo como las respuestas obtenidas.\n\n| Configuración del comercio | Configuración del x_test_request  | Modo de transacción |\n|-----------|------|-------------|\n| pruebas | TRUE | pruebas |\n| pruebas | FALSE | pruebas |\n| producción | TRUE | pruebas |\n| producción | FALSE | producción |\n\nEn modo de pruebas únicamente son aceptados los siguientes números de tarjetas:\n\n| Franquicia | Tarjeta  | Comportamiento |\n|-----------|------|-------------|\n| Visa | 4005580000000040 | Rechaza |\n| Visa | 4007000000027 | Autoriza |\n| Visa | 4111111111111111 | Autoriza |\n| Visa | 4212121212121214 | Deja la operación pendiente como si fuera modo captura, la operación se debe asentar o anular por el panel de Placetopay o en su defecto mediante una operación SETTLE o VOID. |\n| Visa | 4666666666666669 | Se demora en autorizar 3 minutos. La idea es simular un timeout en su autorización. Así queel consumo del servicio fallará por tiempo, lo cual obligará al consumo de la sonda para verificar cuando la operación culmina su procesamiento. Tenga en cuenta los tiempos de consumo del webservice. |\n| MasterCard | 5424000000000015 | Autoriza |\n| MasterCard | 5406251000000008 | Autoriza |\n| AmericanExpress | 370000000000002 | Autoriza |\n| Diners | 36018623456787 | Autoriza |\n| BBVA Club Campestre | 8130010000000000 | Autoriza |",
+        "tags": [
+          "Servicio Tarjeta credito"
+        ]
+      },
+      "parameters": []
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "title": "User",
+        "type": "object",
+        "description": "",
+        "x-examples": {
+          "Alice Smith": {
+            "id": 142,
+            "firstName": "Alice",
+            "lastName": "Smith",
+            "email": "alice.smith@gmail.com",
+            "dateOfBirth": "1997-10-31",
+            "emailVerified": true,
+            "signUpDate": "2019-08-24"
+          }
+        },
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the given user."
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "example": "1997-10-31"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "description": "Set to true if the user's email has been verified."
+          },
+          "createDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The date that the user was created."
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "emailVerified"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Servicio PSE"
+    },
+    {
+      "name": "Servicio Tarjeta credito"
+    },
+    {
+      "name": "Servicio Tuya"
+    },
+    {
+      "name": "Servicio Efectivo"
+    }
+  ]
+}
