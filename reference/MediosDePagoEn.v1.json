@@ -187,7 +187,7 @@
         "operationId": "post-cashorder",
         "responses": {
           "200": {
-            "description": "**int**. La referencia única de la orden de pago en Placetopay."
+            "description": "`int`. The unique reference of the payment order in Placetopay."
           }
         },
         "requestBody": {
@@ -204,12 +204,12 @@
               }
             }
           },
-          "description": "**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | datos de autenticación. |\n| order | CashOrder | datos de la orden de pago. |\n\n**CashOrder**\n\nEstructura con la información de una orden de pago en efectivo.\n\n**ATRIBUTOS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| reference | string[32] | Referencia única de pago. |\n| description | string[255] | Descripción o detalle de la orden de pago. |\n| language | string[2] | Idioma esperado para las transacciones acorde a **ISO 631-1**, usar ES. |\n| currency | string[3] | Código de la moneda acorde a ISO 4217 en la cual está expresado el cobro, usar COP. |\n| totalAmount | decimal | Valor total a recaudar. |\n| taxAmount | decimal | Discriminación del impuesto aplicado. |\n| subtotalAmount | decimal | Valor base antes de impuestos. |\n| expiration | datetime | Fecha y hora máxima hasta la cual se recibe el pago [AAAA-MM-DDTHH:NN:SS] | \n| buyer | Person | Información del comprador. |\n| ipAddress| string | Dirección IP desde la cual realiza la solicitud el pagador. |\n| userAgent | string | Agente de navegación utilizado por el pagador al hacer la solicitud. |\n| additionalData | Attribute[] | Datos adicionales para ser almacenados con la transacción. |\n| notificationURL | string[255] | URL de notificación una vez la transacción es realizada. |"
+          "description": "**PARAMETERS**\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| auth | Authentication | authentication data. |\n| order | CashOrder | payment order details. |\n\n**CashOrder**\n\nStructure with the information of a cash payment order\n\n**ATTRIBUTES**\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| reference | string[32] | Single payment reference. |\n| description | string[255] | Description or detail of the payment order. |\n| language | string[2] | Expected language for transactions according to **ISO 631-1**, use ES. |\n| currency | string[3] | Currency code according to ISO 4217 in which the collection is expressed, use COP. |\n| totalAmount | decimal | Total value to be raised. |\n| taxAmount | decimal | Applied tax discrimination. |\n| subtotalAmount | decimal | Base value before tax. |\n| expiration | datetime | The maximum date and time up to which payment is received AAAA-MM-DDTHH: NN: SS | \n| buyer | Person | Buyer information. |\n| ipAddress| string | IP address from which the payer makes the request. |\n| userAgent | string | Navigation agent used by the payer when making the request. |\n| additionalData | Attribute[] | Additional data to be stored with the transaction. |\n| notificationURL | string[255] | Notification URL once the transaction is made. |"
         },
+        "description": "Add a cash payment order.",
         "tags": [
-          "Servicio Efectivo"
-        ],
-        "description": "Agrega una orden de pago para efectivo."
+          "Cash Service"
+        ]
       },
       "parameters": []
     },
