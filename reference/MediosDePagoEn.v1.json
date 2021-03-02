@@ -240,7 +240,7 @@
           "description": "**PARÁMETROS**\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| auth | Authentication | Authentication data. |\n| id | int | Unique reference of the generated payment order. |"
         },
         "tags": [
-          "Servicio Efectivo"
+          "Cash Service"
         ]
       },
       "parameters": []
@@ -272,7 +272,7 @@
         },
         "description": "Delete a payment order at Placetopay that has not been paid for.",
         "tags": [
-          "Servicio Efectivo"
+          "Cash Service"
         ]
       }
     },
