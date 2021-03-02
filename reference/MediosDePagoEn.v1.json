@@ -251,7 +251,7 @@
         "operationId": "post-cashorder",
         "responses": {
           "200": {
-            "description": "**int**. Número de registros eliminados, si es un cero indicará que el registro no fue hallado, si hay un error al eliminar el registro se retornará una excepción `SoapFault`."
+            "description": "**int**. Number of records deleted, if it is a zero it will indicate that the record was not found, if there is an error when deleting the record an exception will be returned `SoapFault`."
           }
         },
         "requestBody": {
@@ -268,9 +268,9 @@
               }
             }
           },
-          "description": "**PARÁMETROS**\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación. |\n| id | int | Referencia única de la orden de pago a eliminar. |\n"
+          "description": "**PARAMETERS**\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| auth | Authentication | Authentication data. |\n| id | int | Unique reference of the generated payment order. |\n"
         },
-        "description": "Elimina una orden de pago en Placetopay que no haya sido pagada.",
+        "description": "Delete a payment order at Placetopay that has not been paid for.",
         "tags": [
           "Servicio Efectivo"
         ]
