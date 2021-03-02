@@ -123,7 +123,7 @@
         "operationId": "post-soap-tuya-v11",
         "responses": {
           "200": {
-            "description": "**TransactionInformation**. Información del estado de la transacción."
+            "description": "**TransactionInformation**. Transaction status information."
           }
         },
         "requestBody": {
@@ -140,12 +140,12 @@
               }
             }
           },
-          "description": "Obtiene la información de una transacción, debe ser consultado para cualquier operación previamente creada con el método createTransaction ya sea cuando regresa del medio de pago o cuando al menos han transcurrido 7 minutos desde que el cliente fue redirigido a la interfaz del medio de pago. Deberá consumirse en intervalos de al menos cada 12 minutos hasta que tenga un estado de transacción `transactionState` diferente a `PENDING`.\n\n| Nombre | Tipo | Descripción |\n|-----------|------|-------------|\n| auth | Authentication | Datos de autenticación |\n| transactionID | int | Identificador único de la transacción en Placetopay, equivale al retornado en la creación de la transacción. |"
+          "description": "Gets information of a transaction, it must be queried for any operation previously created with createTransaction method either when it returns from payment medium or when at least 7 minutes have elapsed since client was redirected to payment method interface. It should be consumed at intervals of at least every 12 minutes until it has a `transactionState` transaction state other than `PENDING`.\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| auth | Authentication | Authentication data |\n| transactionID | int | Unique transaction identifier in Placetopay, equivalent to return in transaction creation. |"
         },
         "tags": [
           "Servicio Tuya"
         ],
-        "description": "Una vez el cliente ha finalizado la transacción en la interfaz del banco, el banco redirige al cliente a la URL especificada al crear la transacción, en este punto de entrada a su aplicativo, usted deberá consumir el servicio `getTransactionInformation` que le permite determinar el estado de la transacción. Solo si la transacción tiene como estado `OK` es porque la transacción fue autorizada, si por el contrario obtiene un estado `PENDING` es porque aún no tiene respuesta final del banco acerca de la transacción.\n\nYa sea que el cliente retorne al punto de reingreso y que la transacción esté pendiente, o que haya abandonado la operación y haya roto el flujo normal, se deberá consumir el servicio `getTransactionInformation` para todas las operaciones que desde que fue invocado el `createTransaction` llevan más de 7 minutos sin un estado final de operación."
+        "description": "Once client has completed transaction on bank interface, bank redirects client to URL specified when creating transaction, at this entry point to its application, you must consume `getTransactionInformation` service that allows you to determine status of transaction. Only if transaction has an  `OK` status is because transaction was authorized, if on contrary it gets a `PENDING` status is because it does not yet have a final response from bank about transaction.\n\nWhether client returns to re-entry point and transaction is pending, or has abandoned operation and broken normal flow, getTransactionInformation service must be consumed for all operations that since createTransaction `was invoked take` more than 7 minutes without a final state of operation."
       },
       "parameters": []
     },
