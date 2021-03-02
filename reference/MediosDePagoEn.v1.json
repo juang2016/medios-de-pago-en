@@ -143,7 +143,7 @@
           "description": "Gets information of a transaction, it must be queried for any operation previously created with createTransaction method either when it returns from payment medium or when at least 7 minutes have elapsed since client was redirected to payment method interface. It should be consumed at intervals of at least every 12 minutes until it has a `transactionState` transaction state other than `PENDING`.\n\n| Name | Type | Description |\n|-----------|------|-------------|\n| auth | Authentication | Authentication data |\n| transactionID | int | Unique transaction identifier in Placetopay, equivalent to return in transaction creation. |"
         },
         "tags": [
-          "Servicio Tuya"
+          "Tuya Service"
         ],
         "description": "Once client has completed transaction on bank interface, bank redirects client to URL specified when creating transaction, at this entry point to its application, you must consume `getTransactionInformation` service that allows you to determine status of transaction. Only if transaction has an  `OK` status is because transaction was authorized, if on contrary it gets a `PENDING` status is because it does not yet have a final response from bank about transaction.\n\nWhether client returns to re-entry point and transaction is pending, or has abandoned operation and broken normal flow, getTransactionInformation service must be consumed for all operations that since createTransaction `was invoked take` more than 7 minutes without a final state of operation."
       },
