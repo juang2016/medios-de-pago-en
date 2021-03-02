@@ -91,7 +91,7 @@
         "operationId": "post-pse-v11",
         "responses": {
           "200": {
-            "description": "**PSETransactionResponse**. Respuesta de la creación de la transacción, tenga en cuenta que la URL del banco se entrega solo si la propiedad returnCode es `SUCCESS`."
+            "description": "**PSETransactionResponse**. Transaction creation response, note that the bank url is delivered only if the returnCode property is `SUCCESS`."
           }
         },
         "requestBody": {
