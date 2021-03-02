@@ -317,7 +317,7 @@
             "description": "OK"
           }
         },
-        "description": "`Login and secretKey are provided by PlacetoPay`.\n\n`This structure must be sent in each request made to the service`.\n\n`The seed cannot make a difference of more than 5 minutes`.\n\nOn right side you can simulate generation of support required for each of requests made to payment gateway (API), that method receives a login and a trankey per medium from a POST request, internally processing information to return an XML structure that can be copied and pasted into other requests within auth object.\n\nIt should be clarified that this method is provided as an aid in generating authentication structure of requests and is not part of webcheckout integration methods\n\nURL reference authentication: https://authe-ptp.herokuapp.com/xml-auth.php\n",
+        "description": "**PARAMETERS**\n\n| Parameter | Description |\n|-----------|-------------|\n| login | Site ID. |\n| tranKey | transactional key, which consists of the next operation: SHA1(seed + secretkey). |\n| seed | Current date, which is generated in ISO 8601. |\n\n\n`Login and secretKey are provided by PlacetoPay`.\n\n`This structure must be sent in each request made to the service`.\n\n`The seed cannot make a difference of more than 5 minutes`.\n\nOn right side you can simulate generation of support required for each of requests made to payment gateway (API), that method receives a login and a trankey per medium from a POST request, internally processing information to return an XML structure that can be copied and pasted into other requests within auth object.\n\nIt should be clarified that this method is provided as an aid in generating authentication structure of requests and is not part of webcheckout integration methods\n\nURL reference authentication: https://authe-ptp.herokuapp.com/xml-auth.php\n",
         "requestBody": {
           "content": {
             "application/json": {
@@ -342,7 +342,10 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "Authentication"
+        ]
       },
       "parameters": []
     }
