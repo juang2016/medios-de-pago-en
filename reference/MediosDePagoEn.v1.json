@@ -310,7 +310,7 @@
     },
     "": {
       "post": {
-        "summary": "",
+        "summary": "Get AuthAPI Colombia",
         "operationId": "post-d",
         "responses": {
           "200": {
