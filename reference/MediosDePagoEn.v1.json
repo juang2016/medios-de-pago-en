@@ -9,6 +9,10 @@
     {
       "url": "https://test.placetopay.com/soap/",
       "description": "Test Mode "
+    },
+    {
+      "url": "https://authe-ptp.herokuapp.com/xml-auth.php",
+      "description": "Authentication"
     }
   ],
   "paths": {
